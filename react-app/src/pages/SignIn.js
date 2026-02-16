@@ -5,6 +5,10 @@ import { useGoogleLogin } from '@react-oauth/google';
 import api from '../api/client';
 import '../styles/Auth.css';
 
+const googleClientId =
+  (process.env.REACT_APP_GOOGLE_CLIENT_ID || '').trim() ||
+  '967147645448-bhbi84soem6fu4r0uatrr9ugk4qndf89.apps.googleusercontent.com';
+
 function SignIn() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -81,7 +85,7 @@ function SignIn() {
   const handleGoogleSignIn = () => {
     setError('');
 
-    if (!process.env.REACT_APP_GOOGLE_CLIENT_ID) {
+    if (!googleClientId) {
       setError('Google Client ID is missing. Add REACT_APP_GOOGLE_CLIENT_ID in .env');
       return;
     }

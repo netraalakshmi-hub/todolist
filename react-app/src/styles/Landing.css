@@ -334,6 +334,42 @@ body {
   margin-top: 2rem;
 }
 
+@media (max-width: 1024px) {
+  .hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .hero-content,
+  .hero-illustration {
+    width: 100%;
+    min-width: 0;
+    max-width: 560px;
+  }
+
+  .hero-illustration {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .landing .hero-illustration .task-card,
+  .landing .hero-illustration .card1,
+  .landing .hero-illustration .card2,
+  .landing .hero-illustration .card3 {
+    position: relative;
+    width: 100%;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    animation: none;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title {
@@ -364,6 +400,10 @@ body {
 
   .hero {
     padding: 2rem 1rem;
+  }
+
+  .hero-content {
+    min-width: 0;
   }
 
   .hero-illustration {
