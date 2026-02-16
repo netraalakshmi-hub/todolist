@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "id": "cc7e75ce-1bf7-43a4-8e50-66560980df9e",
+      "name": "Real User",
+      "email": "realuser@example.com",
+      "passwordHash": "$2b$10$63oJUYxtOitW9srr6SZNp.zQlDUC94YKwm0SR6RdMQzcEEu5B4EU.",
+      "createdAt": "2026-02-16T11:36:16.150Z"
+    },
+    {
+      "id": "4389ecde-645c-4054-b146-97227db0766f",
+      "name": "SQLite User",
+      "email": "sqliteuser@example.com",
+      "passwordHash": "$2b$10$l1lEJQDZVEYhwNXgATq7BO1K8jA08FkVgCe6kp7tNicNbhB1kiWdi",
+      "createdAt": "2026-02-16T11:56:33.345Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "f9cd695b-f0ef-429d-83eb-f4adede249cd",
+      "userId": "4389ecde-645c-4054-b146-97227db0766f",
+      "title": "Reminder test task",
+      "completed": false,
+      "category": "work",
+      "createdAt": "2026-02-16T11:56:33.533Z"
+    },
+    {
+      "id": "502cd7fb-122a-41c7-8950-372d173de791",
+      "userId": "cc7e75ce-1bf7-43a4-8e50-66560980df9e",
+      "title": "JWT protected task",
+      "completed": false,
+      "category": "work",
+      "createdAt": "2026-02-16T11:36:16.384Z"
+    }
+  ]
+}
