@@ -15,6 +15,10 @@ const frontendBuildPath = path.join(__dirname, '..', 'react-app', 'build');
 const dataDirPath = path.join(__dirname, 'data');
 const legacyJsonPath = path.join(dataDirPath, 'db.json');
 const sqlitePath = path.join(dataDirPath, 'app.sqlite');
+const configuredCorsOrigins = String(process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((item) => item.trim())
+  .filter(Boolean);
 
 let db;
 let reminderTimer;
@@ -222,9 +226,29 @@ const authRequired = (req, res, next) => {
   }
 };
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+
+  const defaultOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  if (defaultOrigins.includes(origin)) return true;
+
+  if (configuredCorsOrigins.includes(origin)) return true;
+
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return true;
+
+  return false;
+};
+
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
