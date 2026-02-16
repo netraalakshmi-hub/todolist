@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaGoogle, FaUser, FaEnvelope, FaLock, FaArrowLeft } from 'react-icons/fa';
+import { FaGoogle, FaUser, FaEnvelope, FaLock, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../api/client';
 import '../styles/Auth.css';
 
@@ -10,6 +10,7 @@ function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPasswords, setShowPasswords] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignUp = async (e) => {
@@ -117,11 +118,21 @@ function SignUp() {
               <FaLock className="input-icon" />
               <input
                 id="password"
-                type="password"
+                type={showPasswords ? 'text' : 'password'}
+                className="password-input"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                className="input-toggle"
+                onClick={() => setShowPasswords((prev) => !prev)}
+                aria-label={showPasswords ? 'Hide password' : 'Show password'}
+                title={showPasswords ? 'Hide password' : 'Show password'}
+              >
+                {showPasswords ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
 
@@ -131,11 +142,21 @@ function SignUp() {
               <FaLock className="input-icon" />
               <input
                 id="confirmPassword"
-                type="password"
+                type={showPasswords ? 'text' : 'password'}
+                className="password-input"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
+              <button
+                type="button"
+                className="input-toggle"
+                onClick={() => setShowPasswords((prev) => !prev)}
+                aria-label={showPasswords ? 'Hide password' : 'Show password'}
+                title={showPasswords ? 'Hide password' : 'Show password'}
+              >
+                {showPasswords ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
 

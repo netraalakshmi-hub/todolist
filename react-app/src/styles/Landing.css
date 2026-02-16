@@ -367,6 +367,26 @@ body {
   }
 
   .hero-illustration {
-    height: 300px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .landing .hero-illustration .task-card {
+    position: relative;
+    width: 100%;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    animation: none;
+  }
+
+  .landing .hero-illustration .card1,
+  .landing .hero-illustration .card2,
+  .landing .hero-illustration .card3 {
+    width: 100%;
   }
 }
