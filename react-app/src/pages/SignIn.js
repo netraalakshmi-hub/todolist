@@ -19,28 +19,30 @@ function SignIn() {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: {
-            Authorization: `Bearer ${tokenResponse.access_token}`,
-          },
+        const response = await api.post('/auth/google', {
+          accessToken: tokenResponse?.access_token,
         });
 
-        const profile = await profileResponse.json();
+        const { token, user } = response.data || {};
+
+        if (token) {
+          localStorage.setItem('tf_token', token);
+        }
 
         localStorage.setItem(
           'tf_auth',
           JSON.stringify({
             provider: 'google',
-            email: profile?.email,
-            name: profile?.name || 'Google User',
-            picture: profile?.picture,
+            email: user?.email,
+            name: user?.name || 'Google User',
             ts: Date.now(),
           })
         );
 
         navigate('/dashboard');
       } catch (err) {
-        setError('Google sign-in failed. Please try again.');
+        const message = err?.response?.data?.error || 'Google sign-in failed. Please try again.';
+        setError(message);
       }
     },
     onError: () => {
@@ -115,7 +117,6 @@ function SignIn() {
               <input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -130,7 +131,6 @@ function SignIn() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 className="password-input"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

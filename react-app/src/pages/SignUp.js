@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaGoogle, FaUser, FaEnvelope, FaLock, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useGoogleLogin } from '@react-oauth/google';
 import api from '../api/client';
 import '../styles/Auth.css';
+
+const googleClientId =
+  (process.env.REACT_APP_GOOGLE_CLIENT_ID || '').trim() ||
+  '967147645448-bhbi84soem6fu4r0uatrr9ugk4qndf89.apps.googleusercontent.com';
 
 function SignUp() {
   const navigate = useNavigate();
@@ -12,6 +17,40 @@ function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
   const [error, setError] = useState('');
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const response = await api.post('/auth/google', {
+          accessToken: tokenResponse?.access_token,
+        });
+
+        const { token, user } = response.data || {};
+
+        if (token) {
+          localStorage.setItem('tf_token', token);
+        }
+
+        localStorage.setItem(
+          'tf_auth',
+          JSON.stringify({
+            provider: 'google',
+            email: user?.email,
+            name: user?.name || 'Google User',
+            ts: Date.now(),
+          })
+        );
+
+        navigate('/dashboard');
+      } catch (err) {
+        const message = err?.response?.data?.error || 'Google sign-up failed. Please try again.';
+        setError(message);
+      }
+    },
+    onError: () => {
+      setError('Google sign-up was cancelled or failed.');
+    },
+  });
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -59,14 +98,14 @@ function SignUp() {
   };
 
   const handleGoogleSignUp = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google sign-up clicked');
-    try {
-      localStorage.setItem('tf_auth', JSON.stringify({ provider: 'google', name: 'Google User', ts: Date.now() }));
-    } catch {
-      // ignore
+    setError('');
+
+    if (!googleClientId) {
+      setError('Google Client ID is missing. Add REACT_APP_GOOGLE_CLIENT_ID in .env');
+      return;
     }
-    navigate('/dashboard');
+
+    googleLogin();
   };
 
   return (
@@ -91,7 +130,6 @@ function SignUp() {
               <input
                 id="name"
                 type="text"
-                placeholder="John Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -105,7 +143,6 @@ function SignUp() {
               <input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -120,7 +157,6 @@ function SignUp() {
                 id="password"
                 type={showPasswords ? 'text' : 'password'}
                 className="password-input"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -144,7 +180,6 @@ function SignUp() {
                 id="confirmPassword"
                 type={showPasswords ? 'text' : 'password'}
                 className="password-input"
-                placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />

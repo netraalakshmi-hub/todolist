@@ -235,6 +235,7 @@ const isAllowedOrigin = (origin) => {
   if (configuredCorsOrigins.includes(origin)) return true;
 
   if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return true;
+  if (/^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(origin)) return true;
 
   return false;
 };
@@ -316,6 +317,70 @@ api.post('/auth/login', async (req, res) => {
   const isValid = await bcrypt.compare(String(password), user.password_hash);
   if (!isValid) {
     return res.status(401).json({ error: 'Invalid email or password' });
+  }
+
+  const token = createToken(user);
+  return res.json({ token, user: sanitizeUser(user) });
+});
+
+api.post('/auth/google', async (req, res) => {
+  const { accessToken } = req.body || {};
+
+  if (!accessToken || typeof accessToken !== 'string') {
+    return res.status(400).json({ error: 'Google access token is required' });
+  }
+
+  if (typeof fetch !== 'function') {
+    return res.status(500).json({ error: 'Server runtime does not support fetch' });
+  }
+
+  let profileResponse;
+  try {
+    profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  } catch {
+    return res.status(502).json({ error: 'Failed to reach Google userinfo service' });
+  }
+
+  if (!profileResponse.ok) {
+    return res.status(401).json({ error: 'Invalid Google access token' });
+  }
+
+  let profile;
+  try {
+    profile = await profileResponse.json();
+  } catch {
+    return res.status(502).json({ error: 'Failed to parse Google profile response' });
+  }
+
+  const email = String(profile?.email || '').trim().toLowerCase();
+  const name = String(profile?.name || 'Google User').trim() || 'Google User';
+
+  if (!email) {
+    return res.status(400).json({ error: 'Google account email is required' });
+  }
+
+  let user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
+
+  if (!user) {
+    user = {
+      id: randomUUID(),
+      name,
+      email,
+      password_hash: await bcrypt.hash(randomUUID(), 10),
+      created_at: new Date().toISOString(),
+    };
+
+    await db.run(
+      `
+        INSERT INTO users (id, name, email, password_hash, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `,
+      [user.id, user.name, user.email, user.password_hash, user.created_at]
+    );
   }
 
   const token = createToken(user);
@@ -438,6 +503,7 @@ if (fs.existsSync(frontendBuildPath)) {
         '/api/health',
         '/api/auth/register',
         '/api/auth/login',
+        '/api/auth/google',
         '/api/auth/me',
         '/api/tasks',
         '/api/notifications',

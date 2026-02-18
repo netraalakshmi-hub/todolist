@@ -415,6 +415,33 @@ function Dashboard() {
     setTemplateSelectedTimes(prev => (prev.includes(cleaned) ? prev : [...prev, cleaned]));
   };
 
+  const createLocalTask = useCallback(({
+    title,
+    category = 'none',
+    dueAt = null,
+    starred = false,
+    icon = null,
+    templateMeta = null,
+  }) => {
+    const isoNow = new Date().toISOString();
+    const localTask = mapApiTaskToLocal({
+      id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title,
+      category,
+      completed: false,
+      dueAt,
+      reminderSent: false,
+      createdAt: isoNow,
+    });
+
+    return {
+      ...localTask,
+      starred: !!starred,
+      icon,
+      templateMeta,
+    };
+  }, [mapApiTaskToLocal]);
+
   const addTemplateToList = async () => {
     const phrase = templatePhrase.trim();
     if (!phrase) return;
@@ -436,7 +463,13 @@ function Dashboard() {
       createdTask.templateMeta = meta;
       setTasks(prev => ([...prev, createdTask]));
     } catch {
-      return;
+      const fallbackTask = createLocalTask({
+        title: phrase,
+        category: templateCategory,
+        icon: activeTemplate?.icon || null,
+        templateMeta: meta,
+      });
+      setTasks(prev => ([...prev, fallbackTask]));
     }
 
     setShowTaskTemplate(false);
@@ -548,7 +581,13 @@ function Dashboard() {
         createdTask.starred = !!newTaskStarred;
         setTasks(prev => ([...prev, createdTask]));
       } catch {
-        return;
+        const fallbackTask = createLocalTask({
+          title: newTask.trim(),
+          category: newTaskCategory,
+          dueAt: dueAtValue,
+          starred: newTaskStarred,
+        });
+        setTasks(prev => ([...prev, fallbackTask]));
       }
 
       setNewTask('');
