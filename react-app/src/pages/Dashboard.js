@@ -562,8 +562,8 @@ function Dashboard() {
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (newTask.trim()) {
+      let dueAtValue = null;
       try {
-        let dueAtValue = null;
         if (newTaskDueDate) {
           const due = new Date(newTaskDueDate);
           const [hours, minutes] = String(newTaskDueTime || '09:00').split(':').map(Number);
