@@ -12,7 +12,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret-in-production';
 const frontendBuildPath = path.join(__dirname, '..', 'react-app', 'build');
-const dataDirPath = path.join(__dirname, 'data');
+const dataDirPath = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(__dirname, 'data');
 const legacyJsonPath = path.join(dataDirPath, 'db.json');
 const sqlitePath = path.join(dataDirPath, 'app.sqlite');
 const configuredCorsOrigins = String(process.env.CORS_ORIGINS || '')
@@ -516,6 +518,8 @@ const start = async () => {
   await initDatabase();
   startReminderWorker();
 
+  console.log(`Using SQLite at: ${sqlitePath}`);
+
   app.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
   });
@@ -526,7 +530,7 @@ start().catch((error) => {
   process.exit(1);
 });
 
-process.on('SIGINT', async () => {
+const shutdown = async () => {
   if (reminderTimer) {
     clearInterval(reminderTimer);
   }
@@ -534,4 +538,7 @@ process.on('SIGINT', async () => {
     await db.close();
   }
   process.exit(0);
-});
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
